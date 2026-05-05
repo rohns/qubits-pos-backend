@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.list_payments),
     path('cash/', views.cash_payment),
     path('stk-push/', views.stk_push),
     path('mpesa-callback/', views.mpesa_callback),

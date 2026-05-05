@@ -2,6 +2,7 @@ import random, string
 from django.db import models
 from django.contrib.auth.models import User
 from products.models import Product
+from django.utils import timezone
 
 def generate_receipt_number():
     letters = ''.join(random.choices(string.ascii_uppercase, k=3))
@@ -18,7 +19,8 @@ class Sale(models.Model):
     status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING', db_index=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='NONE')
     customer_phone = models.CharField(max_length=20, blank=True, null=True)
-    created_at     = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at     = models.DateTimeField(db_index=True)  # Allow manual dates
+    sale_date      = models.DateField(blank=True, null=True, db_index=True)  # Extracted date for reports
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:
@@ -27,6 +29,9 @@ class Sale(models.Model):
                 if not Sale.objects.filter(receipt_number=rn).exists():
                     self.receipt_number = rn
                     break
+        # Extract date for easier reporting
+        if self.created_at:
+            self.sale_date = self.created_at.date()
         super().save(*args, **kwargs)
 
     def __str__(self):
